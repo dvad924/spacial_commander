@@ -14,18 +14,23 @@ class SpacialCommander :
         self.differential = 0;
         self.service = None
     def onReceiveMsg(self):
-        def onBoxes(bboxs):
-            width = 640
-            bbox = bboxs[0]
-            #calc offset from center
-            offset =  (((bbox.xmin + bbox.xmax)/2) - width/2)
-            # give a tolerance of 15pix (integer division)
-            self.differential = offset/15
+        def onBoxes(boxarray):
+            width = 320
+            if len(boxarray.bboxes) > 0:
+                bbox = boxarray.bboxes[0]
+                #calc offset from center
+                offset =  (((bbox.xmin + bbox.xmax)/2) - width/2)
+                # give a tolerance of 15pix (integer division)
+                self.differential = offset/15
+            else:
+                self.differential = 0
         return onBoxes
 
     def get_diff(self):
         def return_diff():
-            return self.differential
+            retval = self.differential
+            self.differential = 0
+            return retval
         return return_diff
     
     def start(self):

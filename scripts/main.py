@@ -27,7 +27,7 @@ class SpacialCommander :
         return onBoxes
 
     def get_diff(self):
-        def return_diff():
+        def return_diff(req):
             retval = self.differential
             self.differential = 0
             return retval

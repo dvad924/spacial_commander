@@ -2,7 +2,9 @@
 import rospy
 from Ros_Coms.msg import bbox,bbox_array
 from std_msgs.msg import String, Header
-from bbox.srv import *
+from Ros_Coms.srv import Movement,MovementResponse
+
+
 class SpacialCommander :
     def __init__(self,topic="inboxes"):
         self.input = rospy.resolve_name( topic )
@@ -11,26 +13,35 @@ class SpacialCommander :
         self.out   = self.out if self.out != "/outcmds" else "/spacial_correction"
         print ( "bbox topic: ", self.input )
         print ( "cmdo topic: ", self.out   )
-        self.differential = 0;
+        self.diffx = 0;
+        self.diffy = 0;
         self.service = None
     def onReceiveMsg(self):
         def onBoxes(boxarray):
-            width = 320
+            width = 640
+            height = 480
             if len(boxarray.bboxes) > 0:
                 bbox = boxarray.bboxes[0]
                 #calc offset from center
-                offset =  (((bbox.xmin + bbox.xmax)/2) - width/2)
+                offsetx =  (((bbox.xmin + bbox.xmax)/2) - width/2)
                 # give a tolerance of 15pix (integer division)
-                self.differential = offset/15
+                self.diffx = offsetx/15
+
+                offsety = (((bbox.ymin + bbox.ymax)/2) - height/2)
+                self.diffy = offsety/11
             else:
-                self.differential = 0
+                self.diffx = 0
+                self.diffy = 0
         return onBoxes
 
     def get_diff(self):
         def return_diff(req):
-            retval = self.differential
-            self.differential = 0
-            return retval
+            resp = MovementResponse()
+            resp.diffx = self.diffx
+            resp.diffy = self.diffy
+            self.diffx = 0
+            self.diffy = 0
+            return resp
         return return_diff
     
     def start(self):
